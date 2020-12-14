@@ -6,16 +6,16 @@ import { Results } from '../extends/Results';
 import { IResult, TResultType } from '../types/IResult';
 import { IContext } from '../types/IContext';
 
-export default class Result implements IResult {
+export default class Result<T = any> implements IResult {
     constructor({ type, data, status }: IResult) {
         this.type = type;
         this.data = data;
         this.status = status;
     }
 
-    type: TResultType;
+    type: TResultType | string;
 
-    data: any;
+    data: T;
 
     status: number;
 

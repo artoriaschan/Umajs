@@ -3,9 +3,7 @@ import * as Koa from 'koa';
 import AspectLoader from '../loader/AspectLoader';
 
 import { ENotice } from '../types/ENotice';
-import { TMethodDecorator } from '../types/TDecorator';
-import { IJoinPoint } from '../types/IJoinPoint';
-import { IProceedJoinPoint } from '../types/IProceedJoinPoint';
+import { IJoinPoint, IProceedJoinPoint } from '../types/IJoinPoint';
 import Result from '../core/Result';
 import { IContext } from '../types/IContext';
 import { IAspect } from '../types/IAspect';
@@ -36,10 +34,10 @@ export function middlewareToAround(mw: (Koa.Middleware<any, IContext>)) {
 
 /**
  * @Aspect('aspectName')
- * @param aspect 作用的切面文件名
+ * @param aspect 指定的切面或切面名称
  * @param notices 指定通知
  */
-export function aspectHelper(aspect: string | IAspect, notices: ENotice[]): TMethodDecorator {
+export function aspectHelper(aspect: string | IAspect, notices: ENotice[]): MethodDecorator {
     const aspectClazz = AspectLoader.getAspect(aspect);
 
     if (!aspectClazz) {

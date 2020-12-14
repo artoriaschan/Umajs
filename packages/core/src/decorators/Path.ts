@@ -1,9 +1,12 @@
-import * as flat from 'array.prototype.flat';
-
 import typeHelper from '../utils/typeHelper';
 import controllerInfo from '../info/controllerInfo';
 import { TMethodDecoratorParams, TClassDecoratorParams } from '../types/TDecorator';
-import { TPathObjArgs } from '../types/TPathArgs';
+import { RequestMethod } from '../types/RequestMethod';
+
+export type TPathObjArgs = {
+    value?: string | string[],
+    method?: RequestMethod | RequestMethod[],
+};
 
 /**
  * 路由装饰器
@@ -18,6 +21,10 @@ import { TPathObjArgs } from '../types/TPathArgs';
  * Path({ value: ['/p1', '/p2'], method: RequestType.GET })
  * Path({ value: ['/p1', '/p2'], method: [RequestType.GET, RequestType.POST] })
  */
+export function Path(...args: string[]): Function;
+
+export function Path(arg: { value?: string | string[]; method?: RequestMethod | RequestMethod[]; }): Function;
+
 export function Path(...args: [...string[]] | [TPathObjArgs]): Function {
     return function Method(...props: TMethodDecoratorParams | TClassDecoratorParams) {
         const [arg0] = args;
@@ -36,36 +43,32 @@ export function Path(...args: [...string[]] | [TPathObjArgs]): Function {
         }
 
         const values = [];
-        const methodType = [];
+        const methodTypes = [];
 
         // when @Path decorate method
         // if config is object, only receive one Object as a parameter
         if (typeHelper.isObject(arg0)) {
-            if (args.length > 1) {
-                throw new Error('@Path only receive one Object as a parameter');
-            }
+            if (args.length > 1) throw new Error('@Path only receive one Object as a parameter');
 
-            const { value = [], method = [] } = arg0;
+            const { value = '/', method = [] } = arg0;
 
-            values.push(...flat([value]));
-            methodType.push(...flat([method]));
-        }
-
-        // if config is string
-        if (args.length > 1 || typeHelper.isString(arg0)) {
-            values.push(...args);
+            values.push(...(Array.isArray(value) ? value : [value]));
+            methodTypes.push(...(Array.isArray(method) ? method : [method]));
+        } else {
+            (args.length > 0 ? args : ['/']).forEach((arg: any) => {
+                if (typeHelper.isString(arg)) values.push(arg);
+                else throw new Error(`@Path only receive one Object as a parameter, now is "${JSON.stringify(arg)}"`);
+            });
         }
 
         const [target, methodName] = props;
 
+        if (!typeHelper.isString(methodName)) return;
+
         values.forEach((p) => {
             if (!typeHelper.isString(p) || !p.startsWith('/')) throw new Error(`path must be string start with "/", now is "${p}"`);
 
-            controllerInfo.setControllersInfo(target.constructor, methodName, { mpath: p });
-        });
-
-        methodType.forEach((m) => {
-            controllerInfo.setControllersInfo(target.constructor, methodName, { methodType: m });
+            controllerInfo.setControllersInfo(target.constructor, methodName, { path: p, methodTypes });
         });
     };
 }

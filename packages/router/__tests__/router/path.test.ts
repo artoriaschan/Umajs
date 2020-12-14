@@ -1,4 +1,4 @@
-import { start, stop, send } from '../__fixtures__/app/app';
+import { start, stop, send, post } from '../__fixtures__/app/app';
 
 describe('test default && @Path && @Private', () => {
     beforeAll(async () => {
@@ -15,6 +15,11 @@ describe('test default && @Path && @Private', () => {
         expect(index.text).toEqual('this is index router');
     });
 
+    it('default router ===> index.home ===> /', async () => {
+        const index = await send('/');
+        expect(index.text).toEqual('this is index router home method');
+    });
+
     it('only method @path: regexp router ===> index.reg ===> /reg/index', async () => {
         const reg = await send('/reg/index');
         expect(reg.text).toEqual('this is reg router');
@@ -23,6 +28,22 @@ describe('test default && @Path && @Private', () => {
     it('only method @path: static router ===> index.test ===> /static/test', async () => {
         const stat = await send('/static/test');
         expect(stat.text).toEqual('this is static router');
+    });
+
+    it('only method @path: static router endWith("/")===> index.test ===> /static/test', async () => {
+        const stat = await send('/static/test/');
+        expect(stat.text).toEqual('this is static router');
+    });
+
+    it('both get and post requests @path: router ===> index.getAndPost ===> /getAndPost', async () => {
+        const stat = await send('/getAndPost');
+        const statPost = await post('/getAndPost');
+        expect(stat.text).toEqual(statPost.text);
+    });
+    it('both get and post requests @path: router ===> index.getOrPost ===> /get or /post', async () => {
+        const stat = await send('/get');
+        const statPost = await post('/post');
+        expect(stat.text).toEqual(statPost.text);
     });
 
     it('only method @path: method cannot find in default ===> index.reg ===> /index/reg', async () => {
@@ -34,6 +55,11 @@ describe('test default && @Path && @Private', () => {
     it('only clazz @path: default router cannot use default index ===> template.index ===> /template', async () => {
         const reg = await send('/template');
         expect(reg.text).toEqual('Not Found');
+    });
+
+    it('only clazz @path: default router ===> template.home ===> /tpl', async () => {
+        const reg = await send('/tpl');
+        expect(reg.text).toEqual('this is home router in template');
     });
 
     it('only clazz @path: default router ===> template.index ===> /template/index', async () => {

@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { BaseController, Path, Private, Param, Query, RequestMethod, Aspect, Service, Result } from '@umajs/core';
-
+import { Get, Post } from '@umajs/path';
+import { RequestFile } from '@umajs/arg-decorator';
 import TestService from '../service/test.service';
 import { AgeCheck } from '../decorator/AgeCheck';
 import UserService from '../service/user.service';
@@ -32,20 +33,30 @@ export default class Index extends BaseController {
         });
     }
 
-    @Path('/reg/:name*')
+    @Path('/home')
+    home() {
+        this.setHeader('clientType','PC');
+        console.log(this.ctx.get('Cache-Control'));
+        console.log(this.ctx.get('clientType'));
+        this.ctx.set('myappend','1');
+        this.ctx.set('myappend','2');
+        console.log(this.ctx.get('myappend'));
+        this.ctx.cookies.set('name','zdj');
+        this.ctx.cookies.set('name1','zdj1');
+        return Result.send('this is home router! '+this.getHeader('Cache-Control'));
+    }
+
+    @Get('/reg/:name*')
     @Aspect.around('test')
     reg(@AgeCheck('age') age: number, @Param('name') name: string) {
         return Result.send(`this is reg router. ${name} ${age}`);
     }
 
-    @Path({
-        value: ['/submit', '/yu/:id'],
-        method: RequestMethod.POST
-    })
-    submit() {
+    @Post('/submit', '/yu/:id')
+    submit(@RequestFile('pic') file:File) {
         // this.ctx.request.body
         // this.ctx.request.files
-        return Result.send('submit success');
+        return Result.send(`This request get RequestFile file is ${file['path']}`);
     }
 
     @Path('/test', '/static/test2')
@@ -75,13 +86,6 @@ export default class Index extends BaseController {
     ss() {
         this.ctx.session.set('haha', 'Hello World');
         return Result.send(this.ctx.session.get('haha'));
-    }
-
-    @Path({
-        method: RequestMethod.POST
-    })
-    onlyGet() {
-        return Result.send('this method only can post');
     }
 
     @Path('/home/:name')

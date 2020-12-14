@@ -1,9 +1,21 @@
-import { BaseController, Path, Aspect, Query, Param } from '@umajs/core';
+import { BaseController, Path, Aspect, Query, Param, RequestMethod } from '@umajs/core';
+import { Post } from '@umajs/path';
 import { AgeCheck } from '../decorator/AgeCheck';
 import { Result } from '../plugins/test/index';
 
 @Path('/tpl')
 export default class Template extends BaseController {
+    @Path({ method: RequestMethod.GET })
+    home() {
+        return Result.send('this is home router in template1');
+    }
+
+    @Path()
+    home_a() {
+        return Result.send('this is home router in template2');
+    }
+
+    @Post('/p')
     @Path('/index')
     index() {
         return Result.send('this is index router in template');
